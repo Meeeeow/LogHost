@@ -1,0 +1,105 @@
+<%= erb :nav %>
+
+<div class="container logged">
+  <div class="page-title">
+    <h1>邀请码管理</h1>
+    <button type="button" class="btn btn-primary float-xs-right" data-toggle="modal" data-target="#create-code">
+      生成邀请码
+    </button>
+  </div>
+  <table class="table table-bordered invite-code-list">
+    <thead>
+    <tr>
+      <th width="5%">ID</th>
+      <th width="35%">邀请码</th>
+      <th width="35%">使用者</th>
+      <th width="25%">操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% invite_codes.each do |code| %>
+        <tr id="invite-code-<%= code.id %>">
+          <th scope="row"><%= code.id %></th>
+          <td><%= code.code %></td>
+          <td>
+            <% if code.used_by %>
+                <%= get_username_by_id(code.used_by) %>
+            <% else %>
+                尚未使用
+            <% end %>
+          </td>
+          <td class="space-between">
+            <% if code.used_by and user_exist?(code.used_by) %>
+                已使用，无法操作
+            <% else %>
+                <a href="/manage/invite_code/delete/<%= code.id %>" data-id="<%= code.id %>" class="delete-code">
+                  <button type="button" class="btn btn-danger btn-block">删除</button>
+                </a>
+            <% end %>
+          </td>
+        </tr>
+    <% end %>
+    </tbody>
+  </table>
+</div>
+
+<div class="modal fade" id="create-code">
+  <div class="modal-dialog" role="document">
+
+    <form id="create-code-form" action="/manage/invite_code/generate" method="post">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">生成邀请码</h4>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="generate_amount">生成数量</label>
+            <input type="number" class="form-control" id="generate_amount" name="generate_amount" placeholder="请输入数字" value="1" required>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-primary">确认</button>
+        </div>
+
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+    $('.invite-code-list').on('click', '.delete-code', function (e) {
+        var thisButton = $(this).find('button');
+        var thisLine = $("#invite-code-" + this.dataset.id);
+
+        thisButton.text('删除中...');
+
+        $.getJSON(this.href)
+            .done(function () {
+                thisLine.animate({
+                    opacity: 0
+                }, 500, function () {
+                    thisLine.remove();
+                });
+            })
+            .fail(function () {
+                thisButton.text('删除');
+
+                var modal = $('#modal-tips');
+                modal.on('show.bs.modal', function () {
+                    var modal = $(this);
+                    modal.find('.modal-body').text('邀请码删除失败');
+                });
+                modal.modal('show');
+            });
+
+        e.preventDefault();
+    })
+</script>

@@ -1,0 +1,9 @@
+<%= erb :nav %>
+
+<div class="container logged">
+  <% if locals.key? :message %>
+      <div class="alert alert-warning" role="alert">
+        <strong>提示: </strong> <%= message %>
+      </div>
+  <% end %>
+</div>

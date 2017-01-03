@@ -1,0 +1,67 @@
+<% require 'base64' %>
+<%= erb :nav %>
+
+<div class="container logged">
+  <div class="page-title">
+    <h1>日志管理</h1>
+  </div>
+
+  <div class="log-list">
+    <% logs.each do |log| %>
+        <div id="log-id-<%= log.id %>" class="card card-block">
+          <h4 class="card-title"><%= log.description || '暂无描述' %></h4>
+          <p class="card-text"><%= log.content[0...512] %>></p>
+          <div class="actions float-lg-right">
+            <a href="/manage/logs/view/<%= log.id %>">
+              <button class="btn btn-primary">查看</button>
+            </a>
+            <a href="/manage/logs/resolve/<%= log.id %>">
+              <button class="btn btn-success">标记解决</button>
+            </a>
+            <a href="/manage/logs/delete/<%= log.id %>" data-id="<%= log.id %>" class="delete-log">
+              <button class="btn btn-danger">删除</button>
+            </a>
+          </div>
+        </div>
+    <% end %>
+
+    <%= will_paginate logs %>
+  </div>
+</div>
+
+
+
+<script>
+    var logList = $('.log-list');
+
+    logList.on('click', '.delete-log', function (e) {
+        var thisButton = $(this).find('button');
+        var thisLogId = this.dataset.id;
+
+        thisButton.text('删除中...');
+        thisButton.attr('disabled');
+
+        $.getJSON(this.href)
+            .done(function (e) {
+                $('#log-id-' + thisLogId).animate({
+                    opacity: 0
+                }, 600, function () {
+                    $(this).remove();
+                })
+            })
+            .fail(function (res) {
+                var modal = $('#modal-tips');
+                modal.on('show.bs.modal', function () {
+                    thisButton.text('删除');
+                    thisButton.attr('disabled', false)
+                    var modal = $(this);
+                    modal.find('.modal-body').html(
+                        '日志删除失败, 原因: <br><br> <strong>' + res.responseJSON.message + '</strong>'
+                    );
+                });
+                modal.modal('show');
+            });
+
+        e.preventDefault();
+    })
+</script>

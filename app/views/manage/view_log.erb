@@ -1,0 +1,31 @@
+<%= erb :nav %>
+
+<div class="container logged">
+  <div class="page-title">
+    <h1>日志详情</h1>
+  </div>
+  <div class="log-info">
+    <p>
+      上传者: <%= log.created_by %> <br>
+      上传者UID: <%= log.created_by_uid %> <br>
+      日志描述: <%= log.description %> <br>
+      上传时间: <%= log.created_at %> <br>
+    </p>
+  </div>
+  <div id="log-viewer" class="log-viewer"></div>
+</div>
+
+<script src="/js/monaco-editor/loader.js"></script>
+<script>
+    require.config({paths: {'vs': '/js/monaco-editor/'}});
+    require(['vs/editor/editor.main'], function () {
+        window.editor = monaco.editor.create(document.getElementById('log-viewer'), {
+            language: 'javascript',
+            value: decodeURIComponent('<%= URI.escape(log.content, Regexp.new("[^#{URI::PATTERN::UNRESERVED}]")) %>')
+        });
+
+        $(window).resize(function () {
+            editor.layout();
+        })
+    });
+</script>

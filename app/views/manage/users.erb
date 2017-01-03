@@ -1,0 +1,126 @@
+<%= erb :nav %>
+
+<div class="container logged">
+  <div class="page-title">
+    <h1>用户管理</h1>
+  </div>
+  <table class="table table-bordered user-list">
+    <thead>
+    <tr>
+      <th width="5%">ID</th>
+      <th width="60%">用户名</th>
+      <th width="35%">操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% users.each do |user| %>
+        <tr id="user-id-<%= user.id %>">
+          <th scope="row"><%= user.id %></th>
+          <td><%= user.username %></td>
+          <td class="space-between">
+            <a href="/manage/users/edit/<%= user.id %>"><button type="button" class="btn btn-secondary">编辑</button></a>
+
+            <% unless user.id == current_user.id %>
+                <a href="/manage/users/delete/<%= user.id %>" data-id="<%= user.id %>" data-name="<%= user.username %>" class="delete-user">
+                  <button type="button" class="btn btn-danger">删除</button>
+                </a>
+                <a href="/manage/users/delete/<%= user.id %>"><button type="button" class="btn btn-danger" disabled>禁止登陆</button></a>
+            <% end %>
+          </td>
+        </tr>
+    <% end %>
+    </tbody>
+  </table>
+</div>
+
+<div class="modal fade" id="confirm-delete"  role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        </button>
+        <h4 class="modal-title">操作确认</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="confirm-username">请输入 <code id="user-to-delete" class="highlighter-rouge">username</code> 以确认操作</label>
+          <input type="text" id="confirm-username" class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+        <button type="button" id="confirm-delete-action" class="btn btn-danger" disabled>确认删除</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+    var modal = $('#confirm-delete');
+    var deleteButton = $('#confirm-delete-action');
+    var confirmInput = $('#confirm-username');
+
+    confirmInput.on('keyup', function () {
+        if (this.value == $("#user-to-delete").text()) {
+            deleteButton.attr('disabled', false);
+        } else {
+            deleteButton.attr('disabled');
+        }
+    });
+
+    $('.user-list').on('click', '.delete-user', function (e) {
+        var deleteLink = this.href;
+        var username = this.dataset.name;
+        var thisLine = $("#user-id-" + this.dataset.id);
+        var parentModal = modal;
+
+        modal.on('show.bs.modal', function () {
+            var modal = $(this);
+            modal.find('#user-to-delete').text(username);
+
+            setTimeout(function () {
+                confirmInput.focus();
+            }, 500);
+
+            deleteButton.off('click'); // 取消时没有反注册事件，会导致已取消的操作同时被执行
+            deleteButton.click(function () {
+                deleteButton.text('删除中...');
+
+                $.getJSON(deleteLink)
+                    .done(function () {
+                        parentModal.modal('hide');
+                        confirmInput.val('');
+                        deleteButton.text('确认删除');
+
+                        thisLine.animate({
+                            opacity: 0
+                        }, 500, function () {
+                            thisLine.remove();
+                        });
+                    })
+                    .fail(function (res) {
+                        parentModal.modal('hide');
+
+                        console.log('fail', arguments);
+
+                        deleteButton.text('删除');
+
+                        var modal = $('#modal-tips');
+                        modal.on('show.bs.modal', function () {
+                            var modal = $(this);
+                            modal.find('.modal-body').html(
+                                '用户 <strong>' + username +
+                                '</strong> 删除失败, 原因: <br><br> <strong>' + res.responseJSON.message + '</strong>'
+                            );
+                        });
+                        modal.modal('show');
+                    });
+            })
+        });
+
+        modal.modal('show');
+
+        e.preventDefault();
+    })
+</script>

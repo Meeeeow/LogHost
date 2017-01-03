@@ -1,0 +1,35 @@
+<nav class="navbar navbar-full navbar-dark bg-inverse">
+  <ul class="nav navbar-nav">
+    <li class="nav-item">
+      <a class="nav-link" href="/">概览</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/manage/logs">日志</a>
+    </li>
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="/manage/samples" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">样本</a>
+      <div class="dropdown-menu" aria-labelledby="supportedContentDropdown">
+        <a class="dropdown-item" href="/manage/samples">样本</a>
+        <a class="dropdown-item" href="/manage/samples_group">样本组管理</a>
+      </div>
+    </li>
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">管理</a>
+      <div class="dropdown-menu" aria-labelledby="supportedContentDropdown">
+        <a class="dropdown-item" href="/manage/invite_code">邀请码管理</a>
+        <a class="dropdown-item" href="/manage/users">用户管理</a>
+        <a class="dropdown-item" href="/manage/options">系统设置</a>
+      </div>
+    </li>
+
+  </ul>
+
+  <ul class="nav navbar-nav float-xs-right">
+    <li class="nav-item active">
+      <span class="nav-link">登录为 <strong><%= current_user.username %></strong></span>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/logout">退出登录</a>
+    </li>
+  </ul>
+</nav>
